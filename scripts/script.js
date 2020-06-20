@@ -58,14 +58,15 @@ const render = function() {
     });
     
     btnTodoRemove.addEventListener('click', function(){
-      let todoDataClone = [];
 
-      todoData.forEach(function(elem){
-        if (elem !== item) {
-          todoDataClone.push(elem);
+      for (let i = 0; i < todoData.length; i++) {
+
+        if (todoData[i] === item) {
+          todoData.splice(i, 1);
+          i--;
         }
-      });
-      todoData = todoDataClone;
+      }
+      
       render();
     });
   });
