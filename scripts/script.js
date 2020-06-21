@@ -66,7 +66,7 @@ const render = function() {
           i--;
         }
       }
-      
+
       render();
     });
   });
@@ -93,3 +93,6 @@ todoControl.addEventListener('submit', function(event){
   render();
 
 });
+
+outLocalStorage();
+render();
