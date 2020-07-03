@@ -101,7 +101,7 @@ class Todo {
     todoContainer.addEventListener('click', () => {
       this.handler();
     });
-    this.render();
+
   }
 }
 
