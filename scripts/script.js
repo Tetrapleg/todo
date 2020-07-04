@@ -28,12 +28,16 @@ class Todo {
     li.key = todo.key;
     li.insertAdjacentHTML('beforeend', `
     <span class="text-todo">${todo.value}</span>
-    <div class="todo-buttons" style="width:270px">
-      <button class="todo-edit" style="width:150px">Редактировать</button>
+    <div class="todo-buttons">
       <button class="todo-remove"></button>
       <button class="todo-complete"></button>
     </div>
     `);
+    const editBtn = document.createElement('button');
+    editBtn.classList.add('todo-edit');
+    editBtn.style.border = '2px,solid,black';
+    editBtn.textContent = 'Редактировать';
+    li.prepend(editBtn);
     
 
     if(todo.completed) {
@@ -80,8 +84,30 @@ class Todo {
     this.render();
   }
 
-  editItem(key) {
+  editItem(key, target) {
 
+    const editSpan = target.closest('li').querySelector('span');
+    const editBtn = target.closest('li').querySelector('.todo-edit');
+
+    editSpan.contentEditable = true;
+    editBtn.disabled = true;
+
+    const editEnd = e => {
+      editSpan.contentEditable = false;
+      editBtn.disabled = false;
+
+      this.todoData.forEach((item) => {
+        if(item.key === key){
+
+          item.value = editSpan.innerHTML;
+          this.addToStorage();
+        }
+      });
+
+      editSpan.removeEventListener('blur', editEnd);
+    };
+
+    editSpan.addEventListener('blur', editEnd);
     
   }
 
@@ -89,16 +115,87 @@ class Todo {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
-  handler() {
+  deliteAnimation(key, target) {
+    
+    const deliteLi = target.closest('li');
+    let count = 0,
+        requestId;
+
+    const delAnim = () => {
+      
+      count += 4;
+      if(count < 120){
+        deliteLi.style.transform = `translateX(${count}%)`;
+        requestAnimationFrame(delAnim);
+      } else {
+        cancelAnimationFrame(requestId);
+        this.deliteItem(key);
+      }
+    }
+    requestId = requestAnimationFrame(delAnim);
+  }
+
+  removeAnimation(key, target) {
+        
+    const removeLi = target.closest('li');
+    let count = 100,
+        requestIdOff;
+
+    const remAnim = () => {
+      count -= 4;
+      if(count >= 0) {
+        removeLi.style.opacity = `${count}%`;
+        requestAnimationFrame(remAnim);
+      } else {
+        cancelAnimationFrame(requestIdOff);
+        this.completeItem(key);
+        this.removeAnimationOn(key);
+      }
+    };
+
+    requestIdOff = requestAnimationFrame(remAnim);
+    
+  }
+  
+  removeAnimationOn(key) {
+
+    const allLi = document.querySelectorAll('li');
+    
+    let count = 0,
+    requestIdOn,
+    removeLi;
+
+    allLi.forEach((item) => {
+      if(item.key === key){
+        removeLi = item;
+      }
+    });
+
+    const remAnimOn = () => {
+      console.log(count);
+      count += 4;
+      if(count <= 100) {
+        removeLi.style.opacity = `${count}%`;
+        requestAnimationFrame(remAnimOn);
+      } else {
+        cancelAnimationFrame(requestIdOn);
+      }
+    };
+    // requestIdOn = requestAnimationFrame(remAnimOn);
+  }
+
+
+  handler(event) {
 
     const target = event.target;
+    
 
     if(target.classList.value === 'todo-remove') {
-      this.deliteItem(target.closest('li').key);
+      this.deliteAnimation(target.closest('li').key, target);
     } else if(target.classList.value === 'todo-complete') {
-      this.completeItem(target.closest('li').key);
+      this.removeAnimation(target.closest('li').key, target);
     } else if(target.classList.value === 'todo-edit') {
-      this.editItem(target.closest('li').key);
+      this.editItem(target.closest('li').key, target);
     }
   }
 
@@ -107,9 +204,10 @@ class Todo {
 
     const todoContainer = document.querySelector('.todo-container');
     todoContainer.addEventListener('click', () => {
-      this.handler();
+      this.handler(event);
     });
 
+    this.render();
   }
 }
 
